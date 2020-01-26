@@ -40,7 +40,7 @@ func (h *updateHandler) Handle(update *model.Update, sender sender.Sender) error
 		Text:   *update.Message.Text,
 	}
 
-	return sender.SendMessage(update.Message.Chat.ID, msg)
+	return sender.SendMessage(msg)
 }
 
 func main() {
@@ -53,5 +53,4 @@ func main() {
 	)
 	bot.Start()
 }
-
 ```

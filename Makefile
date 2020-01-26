@@ -13,5 +13,9 @@ fmt:
 lint:
 	golangci-lint run --timeout=3m ./...
 
+test:
+	go clean -testcache
+	go test ./...
+
 build:
 	go build ./...
