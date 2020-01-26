@@ -7,28 +7,20 @@ import (
 )
 
 type Sender interface {
-	SendMessage(chatID int64, text string) error
-	SendSticker(chatID int64, sticker string) error
+	SendMessage(chatID int64, msg envelop.TextMessage) error
+	SendSticker(chatID int64, msg envelop.StickerMessage) error
 }
 
 type sender struct {
 	client client.Client
 }
 
-func (s *sender) SendMessage(chatID int64, text string) error {
-	textMessage := envelop.TextMessage{
-		ChatID: chatID,
-		Text:   text,
-	}
-	return s.client.DoPost("sendMessage", textMessage)
+func (s *sender) SendMessage(chatID int64, msg envelop.TextMessage) error {
+	return s.client.DoPost("sendMessage", msg)
 }
 
-func (s *sender) SendSticker(chatID int64, sticker string) error {
-	stickerMessage := envelop.StickerMessage{
-		ChatID:  chatID,
-		Sticker: sticker,
-	}
-	return s.client.DoPost("sendSticker", stickerMessage)
+func (s *sender) SendSticker(chatID int64, msg envelop.StickerMessage) error {
+	return s.client.DoPost("sendSticker", msg)
 }
 
 func NewSender(cfg *config.BotConfig) Sender {

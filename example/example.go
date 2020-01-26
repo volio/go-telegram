@@ -8,6 +8,7 @@ import (
 	"github.com/volio/go-telegram/config"
 	"github.com/volio/go-telegram/model"
 	"github.com/volio/go-telegram/sender"
+	"github.com/volio/go-telegram/sender/envelop"
 )
 
 // implement update handler
@@ -21,7 +22,12 @@ func (h *updateHandler) Handle(update *model.Update, sender sender.Sender) error
 		return nil
 	}
 
-	return sender.SendMessage(update.Message.Chat.ID, *update.Message.Text)
+	msg := envelop.TextMessage{
+		ChatID: update.Message.Chat.ID,
+		Text:   *update.Message.Text,
+	}
+
+	return sender.SendMessage(update.Message.Chat.ID, msg)
 }
 
 func main() {
