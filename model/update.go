@@ -1,5 +1,7 @@
 package model
 
+import "strings"
+
 type UpdateReply struct {
 	OK          bool      `json:"ok"`
 	Description string    `json:"description"`
@@ -25,7 +27,7 @@ type Message struct {
 	ReplyToMessage        *Message              `json:"reply_to_message,omitempty"`
 	EditDate              *int64                `json:"edit_date,omitempty"`
 	MediaGroupID          *string               `json:"media_group_id,omitempty"`
-	AuthorSignature       *string               `json:"author_signature"`
+	AuthorSignature       *string               `json:"author_signature,omitempty"`
 	Text                  *string               `json:"text,omitempty"`
 	Entities              []MessageEntity       `json:"entities,omitempty"`
 	CaptionEntities       []MessageEntity       `json:"caption_entities,omitempty"`
@@ -61,6 +63,47 @@ type Message struct {
 	ReplyMarkup           *InlineKeyboardMarkup `json:"reply_markup,omitempty"`
 }
 
+func (m *Message) IsCommand() bool {
+	if m.Entities == nil || len(m.Entities) == 0 {
+		return false
+	}
+
+	entity := m.Entities[0]
+	return entity.Offset == 0 && entity.IsCommand()
+}
+
+func (m *Message) Command() string {
+	command := m.CommandWithAt()
+
+	if i := strings.Index(command, "@"); i != -1 {
+		command = command[:i]
+	}
+
+	return command
+}
+
+func (m *Message) CommandWithAt() string {
+	if !m.IsCommand() {
+		return ""
+	}
+
+	entity := m.Entities[0]
+	return (*m.Text)[1:entity.Length]
+}
+
+func (m *Message) CommandArguments() string {
+	if !m.IsCommand() {
+		return ""
+	}
+
+	entity := m.Entities[0]
+	if len(*m.Text) == entity.Length {
+		return ""
+	}
+
+	return (*m.Text)[entity.Length+1:]
+}
+
 type User struct {
 	ID           int64   `json:"id"`
 	IsBot        bool    `json:"is_bot"`
@@ -93,11 +136,15 @@ type Sticker struct {
 
 type MessageEntity struct {
 	Type     string  `json:"type"`
-	Offset   int64   `json:"offset"`
-	Length   int64   `json:"length"`
+	Offset   int     `json:"offset"`
+	Length   int     `json:"length"`
 	Url      *string `json:"url,omitempty"`
 	User     *User   `json:"user,omitempty"`
 	Language *string `json:"language,omitempty"`
+}
+
+func (m *MessageEntity) IsCommand() bool {
+	return m.Type == "bot_command"
 }
 
 type PhotoSize struct {
