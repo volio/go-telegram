@@ -10,7 +10,7 @@ import (
 )
 
 type Dispatcher interface {
-	Run(ch chan *model.Update, q chan bool)
+	Run(ch chan *model.Update, q chan interface{})
 }
 
 func NewDispatcher(handler handler.UpdateHandler, sender sender.Sender) Dispatcher {
@@ -25,7 +25,7 @@ type dispatcher struct {
 	sender  sender.Sender
 }
 
-func (d *dispatcher) Run(ch chan *model.Update, q chan bool) {
+func (d *dispatcher) Run(ch chan *model.Update, q chan interface{}) {
 	for {
 		select {
 		case v := <-ch:

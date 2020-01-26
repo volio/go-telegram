@@ -22,7 +22,7 @@ func NewTelegram(cfg config.BotConfig, handler handler.UpdateHandler) Telegram {
 		poll:       poll.NewPoll(&cfg),
 		dispatcher: update.NewDispatcher(handler, s),
 		ch:         make(chan *model.Update, 100),
-		qch:        make(chan bool),
+		qch:        make(chan interface{}),
 	}
 }
 
@@ -30,7 +30,7 @@ type telegram struct {
 	poll       poll.Poll
 	dispatcher update.Dispatcher
 	ch         chan *model.Update
-	qch        chan bool
+	qch        chan interface{}
 }
 
 func (t *telegram) Start() {
