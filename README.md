@@ -46,8 +46,9 @@ func (h *updateHandler) Handle(update *model.Update, sender sender.Sender) error
 func main() {
 	bot := telegram.NewTelegram(
 		config.BotConfig{
-			Timeout: 60 * time.Second,
-			Key:     "telegram bot key",
+			LongPollTimeout: 10 * time.Minute,
+			RequestTimeout:  6 * time.Second,
+			Key:             "telegram bot key",
 		},
 		new(updateHandler),
 	)

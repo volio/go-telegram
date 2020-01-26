@@ -3,8 +3,9 @@ package config
 import "time"
 
 type BotConfig struct {
-	Timeout     time.Duration
-	EnableProxy bool
-	Proxy       string
-	Key         string
+	LongPollTimeout time.Duration
+	RequestTimeout  time.Duration
+	EnableProxy     bool
+	Proxy           string
+	Key             string
 }

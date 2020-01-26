@@ -70,7 +70,7 @@ func (c *client) DoPost(method string, v interface{}) error {
 
 func newHttpClient(cfg *config.BotConfig) *http.Client {
 	client := http.Client{
-		Timeout: cfg.Timeout,
+		Timeout: cfg.RequestTimeout,
 	}
 
 	if cfg.EnableProxy {

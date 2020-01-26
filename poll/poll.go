@@ -24,8 +24,9 @@ type Poll interface {
 func NewPoll(cfg *config.BotConfig) Poll {
 	client := newHttpClient(cfg)
 	return &poll{
-		client: client,
-		key:    cfg.Key,
+		client:  client,
+		key:     cfg.Key,
+		timeout: int64(cfg.LongPollTimeout.Seconds()),
 	}
 }
 
@@ -50,6 +51,7 @@ type poll struct {
 	key     string
 	stopped bool
 	offset  int64
+	timeout int64
 }
 
 func (p *poll) Start(ch chan *model.Update) {
@@ -81,6 +83,9 @@ func (p *poll) Stop() {
 func (p *poll) fetchUpdates() ([]*model.Update, error) {
 	values := url.Values{}
 	values.Set("offset", strconv.FormatInt(p.offset+1, 10))
+	if p.timeout > 0 {
+		values.Set("timeout", strconv.FormatInt(p.timeout, 10))
+	}
 	u := url.URL{
 		Scheme:   "https",
 		Host:     "api.telegram.org",
