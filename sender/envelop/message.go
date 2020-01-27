@@ -2,6 +2,9 @@ package envelop
 
 import "github.com/volio/go-telegram/sender/request"
 
+type Message interface {
+}
+
 type ReplyMarkup interface {
 	Request() request.ReplyMarkupReq
 }

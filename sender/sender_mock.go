@@ -9,9 +9,12 @@ type MockSender struct {
 	mock.Mock
 }
 
-func (m *MockSender) SendMessage(msg envelop.TextMessage) error {
-	args := m.Called(msg)
-	return args.Error(0)
+func (m *MockSender) SendMessage(msg envelop.Message) error {
+	panic("implement me")
+}
+
+func (m *MockSender) SendText(msg envelop.TextMessage) error {
+	panic("implement me")
 }
 
 func (m *MockSender) SendSticker(msg envelop.StickerMessage) error {

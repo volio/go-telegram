@@ -9,7 +9,7 @@ import (
 	"github.com/volio/go-telegram/sender/envelop"
 )
 
-func TestSender_SendMessage(t *testing.T) {
+func TestSender_SendText(t *testing.T) {
 	t.Run("send", func(t *testing.T) {
 		c := new(client.MockClient)
 		c.On("DoPost", mock.Anything, mock.Anything).Return(nil)
@@ -23,7 +23,7 @@ func TestSender_SendMessage(t *testing.T) {
 			Text:   "hello",
 		}
 
-		err := sender.SendMessage(msg)
+		err := sender.SendText(msg)
 		assert.Nil(t, err)
 		c.AssertCalled(t, "DoPost", "sendMessage", msg.Request())
 	})

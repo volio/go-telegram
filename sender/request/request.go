@@ -29,10 +29,15 @@ type PhotoMessageReq struct {
 }
 
 type ReplyMarkupReq interface {
+	t() ReplyMarkupReq
 }
 
 type InlineKeyboardMarkupReq struct {
 	InlineKeyboard [][]InlineKeyboardButtonReq `json:"inline_keyboard"`
+}
+
+func (i *InlineKeyboardMarkupReq) t() ReplyMarkupReq {
+	panic("implement me")
 }
 
 type InlineKeyboardButtonReq struct {
