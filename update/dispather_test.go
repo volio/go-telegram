@@ -28,7 +28,7 @@ func TestDispatcher_Run(t *testing.T) {
 		u := model.Update{UpdateID: 1}
 		// sleep for go routine start
 		ch <- &u
-		time.Sleep(time.Second)
+		time.Sleep(time.Millisecond * 100)
 		close(qch)
 
 		h.AssertCalled(t, "Handle", &u, s)

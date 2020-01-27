@@ -25,7 +25,7 @@ func TestSender_SendMessage(t *testing.T) {
 
 		err := sender.SendMessage(msg)
 		assert.Nil(t, err)
-		c.AssertCalled(t, "DoPost", "sendMessage", msg)
+		c.AssertCalled(t, "DoPost", "sendMessage", msg.Request())
 	})
 }
 
@@ -45,6 +45,6 @@ func TestSender_SendSticker(t *testing.T) {
 
 		err := sender.SendMessage(msg)
 		assert.Nil(t, err)
-		c.AssertCalled(t, "DoPost", "sendMessage", msg)
+		c.AssertCalled(t, "DoPost", "sendMessage", msg.Request())
 	})
 }
