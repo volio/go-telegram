@@ -17,6 +17,17 @@ type StickerMessageReq struct {
 	ReplyToMessageID    *int64 `json:"reply_to_message_id,omitempty"`
 }
 
+type PhotoMessageReq struct {
+	ChatID                int64          `json:"chat_id"`
+	Photo                 string         `json:"photo"`
+	Caption               *string        `json:"caption,omitempty"`
+	ParseMode             *string        `json:"parse_mode,omitempty"`
+	DisableWebPagePreview *bool          `json:"disable_web_page_preview,omitempty"`
+	DisableNotification   *bool          `json:"disable_notification,omitempty"`
+	ReplyToMessageID      *int64         `json:"reply_to_message_id,omitempty"`
+	ReplyMarkup           ReplyMarkupReq `json:"reply_markup,omitempty"`
+}
+
 type ReplyMarkupReq interface {
 }
 

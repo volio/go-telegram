@@ -92,3 +92,40 @@ func (b *InlineKeyboardButton) Request() *request.InlineKeyboardButtonReq {
 	}
 	return r
 }
+
+type PhotoMessage struct {
+	ChatID                int64       `json:"chat_id"`
+	Photo                 string      `json:"photo"`
+	Caption               string      `json:"caption,omitempty"`
+	ParseMode             string      `json:"parse_mode,omitempty"`
+	DisableWebPagePreview bool        `json:"disable_web_page_preview,omitempty"`
+	DisableNotification   bool        `json:"disable_notification,omitempty"`
+	ReplyToMessageID      int64       `json:"reply_to_message_id,omitempty"`
+	ReplyMarkup           ReplyMarkup `json:"reply_markup,omitempty"`
+}
+
+func (m *PhotoMessage) Request() *request.PhotoMessageReq {
+	if m == nil {
+		return nil
+	}
+	r := &request.PhotoMessageReq{
+		ChatID: m.ChatID,
+		Photo:  m.Photo,
+	}
+	if m.Caption != "" {
+		r.Caption = &m.Caption
+	}
+	if m.ParseMode != "" {
+		r.ParseMode = &m.ParseMode
+	}
+	if m.DisableNotification {
+		r.DisableNotification = &m.DisableNotification
+	}
+	if m.ReplyToMessageID != 0 {
+		r.ReplyToMessageID = &m.ReplyToMessageID
+	}
+	if m.ReplyMarkup != nil {
+		r.ReplyMarkup = m.ReplyMarkup.Request()
+	}
+	return r
+}

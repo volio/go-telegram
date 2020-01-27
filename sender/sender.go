@@ -23,6 +23,10 @@ func (s *sender) SendSticker(msg envelop.StickerMessage) error {
 	return s.client.DoPost("sendSticker", msg.Request())
 }
 
+func (s *sender) SendPhoto(msg envelop.PhotoMessage) error {
+	return s.client.DoPost("sendPhoto", msg.Request())
+}
+
 func NewSender(cfg *config.BotConfig) Sender {
 	c := client.NewClient(cfg)
 	return &sender{

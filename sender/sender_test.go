@@ -38,13 +38,33 @@ func TestSender_SendSticker(t *testing.T) {
 			client: c,
 		}
 
-		msg := envelop.TextMessage{
-			ChatID: 1,
-			Text:   "hello",
+		msg := envelop.StickerMessage{
+			ChatID:  1,
+			Sticker: "hello",
 		}
 
-		err := sender.SendMessage(msg)
+		err := sender.SendSticker(msg)
 		assert.Nil(t, err)
-		c.AssertCalled(t, "DoPost", "sendMessage", msg.Request())
+		c.AssertCalled(t, "DoPost", "sendSticker", msg.Request())
+	})
+}
+
+func TestSender_SendPhoto(t *testing.T) {
+	t.Run("send", func(t *testing.T) {
+		c := new(client.MockClient)
+		c.On("DoPost", mock.Anything, mock.Anything).Return(nil)
+
+		sender := &sender{
+			client: c,
+		}
+
+		msg := envelop.PhotoMessage{
+			ChatID: 1,
+			Photo:  "hello",
+		}
+
+		err := sender.SendPhoto(msg)
+		assert.Nil(t, err)
+		c.AssertCalled(t, "DoPost", "sendPhoto", msg.Request())
 	})
 }
