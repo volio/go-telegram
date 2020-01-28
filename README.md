@@ -18,40 +18,34 @@ import (
 	"time"
 
 	"github.com/volio/go-telegram"
+	"github.com/volio/go-telegram/bot/envelop"
 	"github.com/volio/go-telegram/config"
 	"github.com/volio/go-telegram/model"
-	"github.com/volio/go-telegram/sender"
-	"github.com/volio/go-telegram/sender/envelop"
 )
 
-// implement update handler
-type updateHandler struct {
-}
-
-func (h *updateHandler) Handle(update *model.Update, sender sender.Sender) error {
-	fmt.Printf("receive update: %+v", update)
-
-	if update.Message == nil || update.Message.Text == nil {
-		return nil
-	}
-
-	msg := envelop.TextMessage{
-		ChatID: update.Message.Chat.ID,
-		Text:   *update.Message.Text,
-	}
-
-	return sender.SendMessage(msg)
-}
-
 func main() {
-	bot := telegram.NewTelegram(
+	t := telegram.NewTelegram(
 		config.BotConfig{
 			LongPollTimeout: 10 * time.Minute,
 			RequestTimeout:  6 * time.Second,
 			Key:             "telegram bot key",
 		},
-		new(updateHandler),
 	)
-	bot.Start()
+	t.OnUpdate(func(update *model.Update) error {
+		fmt.Printf("receive update: %+v", update)
+
+		if update.Message == nil || update.Message.Text == nil {
+			return nil
+		}
+
+		msg := envelop.TextMessage{
+			ChatID: update.Message.Chat.ID,
+			Text:   *update.Message.Text,
+		}
+
+		return t.Bot().SendMessage(msg)
+	})
+	t.Start()
 }
+
 ```

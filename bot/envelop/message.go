@@ -1,12 +1,12 @@
 package envelop
 
-import "github.com/volio/go-telegram/sender/request"
+import "github.com/volio/go-telegram/bot/request"
 
 type Message interface {
 }
 
 type ReplyMarkup interface {
-	Request() request.ReplyMarkupReq
+	Request() request.ReplyMarkup
 }
 
 type TextMessage struct {
@@ -19,11 +19,11 @@ type TextMessage struct {
 	ReplyMarkup           ReplyMarkup `json:"reply_markup,omitempty"`
 }
 
-func (m *TextMessage) Request() *request.TextMessageReq {
+func (m *TextMessage) Request() *request.TextMessage {
 	if m == nil {
 		return nil
 	}
-	r := &request.TextMessageReq{
+	r := &request.TextMessage{
 		ChatID: m.ChatID,
 		Text:   m.Text,
 	}
@@ -49,8 +49,8 @@ type StickerMessage struct {
 	ReplyToMessageID    int64  `json:"reply_to_message_id,omitempty"`
 }
 
-func (m *StickerMessage) Request() *request.StickerMessageReq {
-	r := &request.StickerMessageReq{
+func (m *StickerMessage) Request() *request.StickerMessage {
+	r := &request.StickerMessage{
 		ChatID:  m.ChatID,
 		Sticker: m.Sticker,
 	}
@@ -67,11 +67,11 @@ type InlineKeyboardMarkup struct {
 	InlineKeyboard [][]InlineKeyboardButton `json:"inline_keyboard"`
 }
 
-func (i *InlineKeyboardMarkup) Request() request.ReplyMarkupReq {
-	r := new(request.InlineKeyboardMarkupReq)
-	g := make([][]request.InlineKeyboardButtonReq, 0, len(i.InlineKeyboard))
+func (i *InlineKeyboardMarkup) Request() request.ReplyMarkup {
+	r := new(request.InlineKeyboardMarkup)
+	g := make([][]request.InlineKeyboardButton, 0, len(i.InlineKeyboard))
 	for _, v := range i.InlineKeyboard {
-		b := make([]request.InlineKeyboardButtonReq, 0, len(v))
+		b := make([]request.InlineKeyboardButton, 0, len(v))
 		for _, button := range v {
 			b = append(b, *button.Request())
 		}
@@ -86,8 +86,8 @@ type InlineKeyboardButton struct {
 	URL  string `json:"url,omitempty"`
 }
 
-func (b *InlineKeyboardButton) Request() *request.InlineKeyboardButtonReq {
-	r := &request.InlineKeyboardButtonReq{
+func (b *InlineKeyboardButton) Request() *request.InlineKeyboardButton {
+	r := &request.InlineKeyboardButton{
 		Text: b.Text,
 	}
 	if b.URL != "" {
@@ -107,11 +107,11 @@ type PhotoMessage struct {
 	ReplyMarkup           ReplyMarkup `json:"reply_markup,omitempty"`
 }
 
-func (m *PhotoMessage) Request() *request.PhotoMessageReq {
+func (m *PhotoMessage) Request() *request.PhotoMessage {
 	if m == nil {
 		return nil
 	}
-	r := &request.PhotoMessageReq{
+	r := &request.PhotoMessage{
 		ChatID: m.ChatID,
 		Photo:  m.Photo,
 	}

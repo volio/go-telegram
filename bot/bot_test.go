@@ -1,20 +1,20 @@
-package sender
+package bot
 
 import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	"github.com/volio/go-telegram/sender/client"
-	"github.com/volio/go-telegram/sender/envelop"
+	"github.com/volio/go-telegram/bot/client"
+	"github.com/volio/go-telegram/bot/envelop"
 )
 
-func TestSender_SendText(t *testing.T) {
+func TestBot_SendText(t *testing.T) {
 	t.Run("send", func(t *testing.T) {
 		c := new(client.MockClient)
 		c.On("DoPost", mock.Anything, mock.Anything).Return(nil)
 
-		sender := &sender{
+		sender := &bot{
 			client: c,
 		}
 
@@ -29,12 +29,12 @@ func TestSender_SendText(t *testing.T) {
 	})
 }
 
-func TestSender_SendSticker(t *testing.T) {
+func TestBot_SendSticker(t *testing.T) {
 	t.Run("send", func(t *testing.T) {
 		c := new(client.MockClient)
 		c.On("DoPost", mock.Anything, mock.Anything).Return(nil)
 
-		sender := &sender{
+		sender := &bot{
 			client: c,
 		}
 
@@ -49,12 +49,12 @@ func TestSender_SendSticker(t *testing.T) {
 	})
 }
 
-func TestSender_SendPhoto(t *testing.T) {
+func TestBot_SendPhoto(t *testing.T) {
 	t.Run("send", func(t *testing.T) {
 		c := new(client.MockClient)
 		c.On("DoPost", mock.Anything, mock.Anything).Return(nil)
 
-		sender := &sender{
+		sender := &bot{
 			client: c,
 		}
 

@@ -1,4 +1,4 @@
-package poll
+package longpoll
 
 import (
 	"encoding/json"
@@ -16,14 +16,14 @@ import (
 	"go.uber.org/zap"
 )
 
-type Poll interface {
+type LongPoll interface {
 	Start(ch chan *model.Update)
 	Stop()
 }
 
-func NewPoll(cfg *config.BotConfig) Poll {
+func NewLongPoll(cfg *config.BotConfig) LongPoll {
 	client := newHttpClient(cfg)
-	return &poll{
+	return &longPoll{
 		client:  client,
 		key:     cfg.Key,
 		timeout: int64(cfg.LongPollTimeout.Seconds()),
@@ -46,7 +46,7 @@ func newHttpClient(cfg *config.BotConfig) *http.Client {
 	return &client
 }
 
-type poll struct {
+type longPoll struct {
 	client  *http.Client
 	key     string
 	stopped bool
@@ -54,7 +54,7 @@ type poll struct {
 	timeout int64
 }
 
-func (p *poll) Start(ch chan *model.Update) {
+func (p *longPoll) Start(ch chan *model.Update) {
 	p.stopped = false
 	for {
 		if p.stopped {
@@ -76,11 +76,11 @@ func (p *poll) Start(ch chan *model.Update) {
 	}
 }
 
-func (p *poll) Stop() {
+func (p *longPoll) Stop() {
 	p.stopped = true
 }
 
-func (p *poll) fetchUpdates() ([]*model.Update, error) {
+func (p *longPoll) fetchUpdates() ([]*model.Update, error) {
 	values := url.Values{}
 	values.Set("offset", strconv.FormatInt(p.offset+1, 10))
 	if p.timeout > 0 {

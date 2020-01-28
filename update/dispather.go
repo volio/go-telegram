@@ -3,37 +3,43 @@ package update
 import (
 	"github.com/volio/go-common/graceful"
 	"github.com/volio/go-common/log"
-	"github.com/volio/go-telegram/handler"
 	"github.com/volio/go-telegram/model"
-	"github.com/volio/go-telegram/sender"
 	"go.uber.org/zap"
 )
 
+type HandleFunc func(update *model.Update) error
+
 type Dispatcher interface {
 	Run(ch chan *model.Update, q chan interface{})
+	SetHandler(fn HandleFunc)
 }
 
-func NewDispatcher(handler handler.UpdateHandler, sender sender.Sender) Dispatcher {
-	return &dispatcher{
-		handler: handler,
-		sender:  sender,
-	}
+func NewDispatcher() Dispatcher {
+	return new(dispatcher)
 }
 
 type dispatcher struct {
-	handler handler.UpdateHandler
-	sender  sender.Sender
+	handleFunc HandleFunc
+}
+
+func (d *dispatcher) SetHandler(fn HandleFunc) {
+	if d.handleFunc != nil {
+		panic("duplicate handler registered")
+	}
+	d.handleFunc = fn
 }
 
 func (d *dispatcher) Run(ch chan *model.Update, q chan interface{}) {
 	for {
 		select {
 		case v := <-ch:
-			graceful.Go(func() {
-				if err := d.handler.Handle(v, d.sender); err != nil {
-					log.L().With(zap.Error(err)).Error("handle update failed")
-				}
-			})
+			if d.handleFunc != nil {
+				graceful.Go(func() {
+					if err := d.handleFunc(v); err != nil {
+						log.L().With(zap.Error(err)).Error("handle update failed")
+					}
+				})
+			}
 		case <-q:
 			log.L().Info("exit handler")
 			return

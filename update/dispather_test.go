@@ -5,23 +5,27 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/mock"
-	"github.com/volio/go-telegram/handler"
 	"github.com/volio/go-telegram/model"
-	"github.com/volio/go-telegram/sender"
 )
+
+type MockHandler struct {
+	mock.Mock
+}
+
+func (h *MockHandler) Handle(update *model.Update) error {
+	args := h.Called(update)
+	return args.Error(0)
+}
 
 func TestDispatcher_Run(t *testing.T) {
 	t.Run("run", func(t *testing.T) {
-		s := new(sender.MockSender)
-		h := new(handler.MockHandler)
-		h.On("Handle", mock.Anything, mock.Anything).Return(nil)
+		h := new(MockHandler)
+		h.On("Handle", mock.Anything).Return(nil)
 
-		dispatcher := &dispatcher{
-			sender:  s,
-			handler: h,
-		}
+		dispatcher := new(dispatcher)
 		ch := make(chan *model.Update, 100)
 		qch := make(chan interface{})
+		dispatcher.SetHandler(h.Handle)
 
 		go dispatcher.Run(ch, qch)
 
@@ -31,6 +35,6 @@ func TestDispatcher_Run(t *testing.T) {
 		time.Sleep(time.Millisecond * 100)
 		close(qch)
 
-		h.AssertCalled(t, "Handle", &u, s)
+		h.AssertCalled(t, "Handle", &u)
 	})
 }
