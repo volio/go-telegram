@@ -106,9 +106,12 @@ func (p *longPoll) fetchUpdates() ([]*model.Update, error) {
 	if err != nil {
 		return nil, errors.WithMessagef(err, "error in read resp body")
 	}
-	var response model.UpdateReply
-	if err := json.Unmarshal(data, &response); err != nil {
+	var r model.UpdateReply
+	if err := json.Unmarshal(data, &r); err != nil {
 		return nil, errors.WithMessagef(err, "unmarshal resp body failed, data: %v", string(data))
 	}
-	return response.Result, nil
+	if !r.OK {
+		return nil, fmt.Errorf("do req failed, err code: %v, description: %v", r.ErrorCode, r.Description)
+	}
+	return r.Result, nil
 }

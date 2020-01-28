@@ -15,11 +15,10 @@ func main() {
 		config.BotConfig{
 			LongPollTimeout: 10 * time.Minute,
 			RequestTimeout:  6 * time.Second,
-			Key:             "telegram bot key",
 		},
 	)
 	t.OnUpdate(func(update *model.Update) error {
-		fmt.Printf("receive update: %+v", update)
+		fmt.Printf("receive update: %+v\n", update)
 
 		if update.Message == nil || update.Message.Text == nil {
 			return nil
@@ -30,7 +29,8 @@ func main() {
 			Text:   *update.Message.Text,
 		}
 
-		return t.Bot().SendMessage(msg)
+		_, err := t.Bot().SendMessage(msg)
+		return err
 	})
 	t.Start()
 }

@@ -15,7 +15,8 @@ import (
 )
 
 type Client interface {
-	DoPost(method string, v interface{}) error
+	DoPost(method string, v interface{}, r interface{}) error
+	DoGet(method string, v map[string]string, r interface{}) error
 }
 
 func NewClient(cfg *config.BotConfig) Client {
@@ -30,7 +31,7 @@ type client struct {
 	key string
 }
 
-func (c *client) DoPost(method string, v interface{}) error {
+func (c *client) DoPost(method string, v interface{}, r interface{}) error {
 	u := url.URL{
 		Scheme: "https",
 		Host:   "api.telegram.org",
@@ -61,8 +62,38 @@ func (c *client) DoPost(method string, v interface{}) error {
 	if err != nil {
 		return errors.WithMessagef(err, "error in read resp body")
 	}
-	var response response
-	if err := json.Unmarshal(data, &response); err != nil {
+	if err := json.Unmarshal(data, r); err != nil {
+		return errors.WithMessagef(err, "unmarshal resp body failed, data: %v", string(data))
+	}
+	return nil
+}
+
+func (c *client) DoGet(method string, v map[string]string, r interface{}) error {
+	values := url.Values{}
+	for k, value := range v {
+		values.Set(k, value)
+	}
+	u := url.URL{
+		Scheme:   "https",
+		Host:     "api.telegram.org",
+		Path:     fmt.Sprintf("/bot%s/%s", c.key, method),
+		RawQuery: values.Encode(),
+	}
+
+	resp, err := c.hc.Get(u.String())
+	if err != nil {
+		return errors.WithMessagef(err, "get resp error")
+	}
+	defer func() {
+		if e := resp.Body.Close(); e != nil {
+			log.L().With(zap.Error(e)).Error("close resp body failed")
+		}
+	}()
+	data, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return errors.WithMessagef(err, "error in read resp body")
+	}
+	if err := json.Unmarshal(data, r); err != nil {
 		return errors.WithMessagef(err, "unmarshal resp body failed, data: %v", string(data))
 	}
 	return nil
@@ -84,8 +115,4 @@ func newHttpClient(cfg *config.BotConfig) *http.Client {
 	}
 
 	return &client
-}
-
-type response struct {
-	OK bool `json:"ok"`
 }
