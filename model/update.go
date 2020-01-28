@@ -14,8 +14,12 @@ type UpdateReply struct {
 }
 
 type Update struct {
-	UpdateID int64    `json:"update_id"`
-	Message  *Message `json:"message"`
+	UpdateID          int64        `json:"update_id"`
+	Message           *Message     `json:"message,omitempty"`
+	EditedMessage     *Message     `json:"edited_message,omitempty"`
+	ChannelPost       *Message     `json:"channel_post,omitempty"`
+	EditedChannelPost *Message     `json:"edited_channel_post,omitempty"`
+	InlineQuery       *InlineQuery `json:"inline_query,omitempty"`
 }
 
 type Message struct {
@@ -242,6 +246,8 @@ type Contact struct {
 }
 
 type Location struct {
+	Longitude float64 `json:"longitude"`
+	Latitude  float64 `json:"latitude"`
 }
 
 type Venue struct {
@@ -260,4 +266,12 @@ type PassportData struct {
 }
 
 type InlineKeyboardMarkup struct {
+}
+
+type InlineQuery struct {
+	ID       string    `json:"id"`
+	From     User      `json:"from"`
+	Location *Location `json:"location,omitempty"`
+	Query    string    `json:"query"`
+	Offset   string    `json:"offset"`
 }
