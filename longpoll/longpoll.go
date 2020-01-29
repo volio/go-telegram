@@ -21,7 +21,7 @@ type LongPoll interface {
 	Stop()
 }
 
-func NewLongPoll(cfg *config.BotConfig) LongPoll {
+func NewLongPoll(cfg *config.Config) LongPoll {
 	client := newHttpClient(cfg)
 	return &longPoll{
 		client:  client,
@@ -30,7 +30,7 @@ func NewLongPoll(cfg *config.BotConfig) LongPoll {
 	}
 }
 
-func newHttpClient(cfg *config.BotConfig) *http.Client {
+func newHttpClient(cfg *config.Config) *http.Client {
 	client := http.Client{}
 
 	if cfg.EnableProxy {

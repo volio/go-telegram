@@ -11,3 +11,8 @@ type MessageReply struct {
 	model.Reply
 	Result model.Message `json:"result"`
 }
+
+type MultiMessageReply struct {
+	model.Reply
+	Result []model.Message `json:"result"`
+}

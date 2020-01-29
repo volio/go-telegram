@@ -251,6 +251,11 @@ type Location struct {
 }
 
 type Venue struct {
+	Location       Location `json:"location"`
+	Title          string   `json:"title"`
+	Address        string   `json:"address"`
+	FoursquareID   *string  `json:"foursquare_id,omitempty"`
+	FoursquareType *string  `json:"foursquare_type,omitempty"`
 }
 
 type Poll struct {
@@ -266,6 +271,21 @@ type PassportData struct {
 }
 
 type InlineKeyboardMarkup struct {
+	InlineKeyboard [][]InlineKeyboardButton `json:"inline_keyboard"`
+}
+
+type InlineKeyboardButton struct {
+	Text                         string        `json:"text"`
+	URL                          *string       `json:"url,omitempty"`
+	LoginURL                     *string       `json:"login_url,omitempty"`
+	CallbackData                 *string       `json:"callback_data,omitempty"`
+	SwitchInlineQuery            *string       `json:"switch_inline_query,omitempty"`
+	SwitchInlineQueryCurrentChat *string       `json:"switch_inline_query_current_chat,omitempty"`
+	CallbackGame                 *CallbackGame `json:"callback_game,omitempty"`
+	Pay                          *bool         `json:"pay,omitempty"`
+}
+
+type CallbackGame struct {
 }
 
 type InlineQuery struct {

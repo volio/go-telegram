@@ -25,7 +25,7 @@ import (
 
 func main() {
 	t := telegram.NewTelegram(
-		config.BotConfig{
+		config.Config{
 			LongPollTimeout: 10 * time.Minute,
 			RequestTimeout:  6 * time.Second,
 		},

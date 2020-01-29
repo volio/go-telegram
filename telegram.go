@@ -16,7 +16,7 @@ type Telegram interface {
 	Bot() bot.Bot
 }
 
-func NewTelegram(cfg config.BotConfig) Telegram {
+func NewTelegram(cfg config.Config) Telegram {
 	return &telegram{
 		bot:        bot.NewBot(&cfg),
 		poll:       longpoll.NewLongPoll(&cfg),

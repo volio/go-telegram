@@ -19,7 +19,7 @@ type Client interface {
 	DoGet(method string, v map[string]string, r interface{}) error
 }
 
-func NewClient(cfg *config.BotConfig) Client {
+func NewClient(cfg *config.Config) Client {
 	return &client{
 		hc:  newHttpClient(cfg),
 		key: cfg.Key,
@@ -99,7 +99,7 @@ func (c *client) DoGet(method string, v map[string]string, r interface{}) error 
 	return nil
 }
 
-func newHttpClient(cfg *config.BotConfig) *http.Client {
+func newHttpClient(cfg *config.Config) *http.Client {
 	client := http.Client{
 		Timeout: cfg.RequestTimeout,
 	}

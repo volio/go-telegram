@@ -18,6 +18,7 @@ type Bot interface {
 	SendSticker(msg envelop.StickerMessage) (*model.Message, error)
 	ForwardMessage(msg envelop.ForwardMessage) (*model.Message, error)
 	SendAudio(msg envelop.AudioMessage) (*model.Message, error)
+	SendMediaGroup(msg envelop.MediaGroupMessage) ([]model.Message, error)
 }
 
 type bot struct {
@@ -103,7 +104,18 @@ func (b *bot) SendAudio(msg envelop.AudioMessage) (*model.Message, error) {
 	return &r.Result, nil
 }
 
-func NewBot(cfg *config.BotConfig) Bot {
+func (b *bot) SendMediaGroup(msg envelop.MediaGroupMessage) ([]model.Message, error) {
+	var r reply.MultiMessageReply
+	if err := b.client.DoPost("sendMediaGroup", msg.Request(), &r); err != nil {
+		return nil, err
+	}
+	if !r.OK {
+		return nil, fmt.Errorf("do req failed, err code: %v, description: %v", r.ErrorCode, r.Description)
+	}
+	return r.Result, nil
+}
+
+func NewBot(cfg *config.Config) Bot {
 	c := client.NewClient(cfg)
 	return &bot{
 		client: c,

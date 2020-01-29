@@ -1,12 +1,11 @@
 package envelop
 
-import "github.com/volio/go-telegram/bot/request"
+import (
+	"github.com/volio/go-telegram/bot/request"
+	"github.com/volio/go-telegram/model"
+)
 
 type Message interface {
-}
-
-type ReplyMarkup interface {
-	Request() request.ReplyMarkup
 }
 
 type TextMessage struct {
@@ -66,15 +65,19 @@ func (m *StickerMessage) Request() *request.StickerMessage {
 	return r
 }
 
+type ReplyMarkup interface {
+	Request() *model.InlineKeyboardMarkup
+}
+
 type InlineKeyboardMarkup struct {
 	InlineKeyboard [][]InlineKeyboardButton `json:"inline_keyboard"`
 }
 
-func (i *InlineKeyboardMarkup) Request() request.ReplyMarkup {
-	r := new(request.InlineKeyboardMarkup)
-	g := make([][]request.InlineKeyboardButton, 0, len(i.InlineKeyboard))
+func (i *InlineKeyboardMarkup) Request() *model.InlineKeyboardMarkup {
+	r := new(model.InlineKeyboardMarkup)
+	g := make([][]model.InlineKeyboardButton, 0, len(i.InlineKeyboard))
 	for _, v := range i.InlineKeyboard {
-		b := make([]request.InlineKeyboardButton, 0, len(v))
+		b := make([]model.InlineKeyboardButton, 0, len(v))
 		for _, button := range v {
 			b = append(b, *button.Request())
 		}
@@ -89,11 +92,11 @@ type InlineKeyboardButton struct {
 	URL  string `json:"url,omitempty"`
 }
 
-func (b *InlineKeyboardButton) Request() *request.InlineKeyboardButton {
+func (b *InlineKeyboardButton) Request() *model.InlineKeyboardButton {
 	if b == nil {
 		return nil
 	}
-	r := &request.InlineKeyboardButton{
+	r := &model.InlineKeyboardButton{
 		Text: b.Text,
 	}
 	if b.URL != "" {
@@ -208,6 +211,106 @@ func (m *AudioMessage) Request() *request.AudioMessage {
 	}
 	if m.ReplyMarkup != nil {
 		r.ReplyMarkup = m.ReplyMarkup.Request()
+	}
+	return r
+}
+
+type MediaGroupMessage struct {
+	ChatID              int64        `json:"chat_id"`
+	Media               []InputMedia `json:"media"`
+	DisableNotification bool         `json:"disable_notification,omitempty"`
+	ReplyToMessageID    int64        `json:"reply_to_message_id,omitempty"`
+}
+
+func (m *MediaGroupMessage) Request() *request.MediaGroupMessage {
+	if m == nil {
+		return nil
+	}
+	r := &request.MediaGroupMessage{
+		ChatID: m.ChatID,
+	}
+	medias := make([]request.InputMedia, 0, len(m.Media))
+	for _, media := range m.Media {
+		medias = append(medias, *media.Request())
+	}
+	r.Media = medias
+	if m.DisableNotification {
+		r.DisableNotification = &m.DisableNotification
+	}
+	if m.ReplyToMessageID != 0 {
+		r.ReplyToMessageID = &m.ReplyToMessageID
+	}
+	return r
+}
+
+type InputMedia interface {
+	Request() *request.InputMedia
+}
+
+type InputMediaPhoto struct {
+	Type      string `json:"type"`
+	Media     string `json:"media"`
+	Caption   string `json:"caption,omitempty"`
+	ParseMode string `json:"parse_mode,omitempty"`
+}
+
+func (i *InputMediaPhoto) Request() *request.InputMedia {
+	if i == nil {
+		return nil
+	}
+	r := &request.InputMedia{
+		Type:  i.Type,
+		Media: i.Media,
+	}
+	if i.Caption != "" {
+		r.Caption = &i.Caption
+	}
+	if i.ParseMode != "" {
+		r.ParseMode = &i.ParseMode
+	}
+	return r
+}
+
+type InputMediaVideo struct {
+	Type              string `json:"type"`
+	Media             string `json:"media"`
+	Thumb             string `json:"thumb,omitempty"`
+	Caption           string `json:"caption,omitempty"`
+	ParseMode         string `json:"parse_mode,omitempty"`
+	Width             int    `json:"width,omitempty"`
+	Height            int    `json:"height,omitempty"`
+	Duration          int    `json:"duration,omitempty"`
+	SupportsStreaming bool   `json:"supports_streaming,omitempty"`
+}
+
+func (i *InputMediaVideo) Request() *request.InputMedia {
+	if i == nil {
+		return nil
+	}
+	r := &request.InputMedia{
+		Type:  i.Type,
+		Media: i.Media,
+	}
+	if i.Thumb != "" {
+		r.Thumb = &i.Thumb
+	}
+	if i.Caption != "" {
+		r.Caption = &i.Caption
+	}
+	if i.ParseMode != "" {
+		r.ParseMode = &i.ParseMode
+	}
+	if i.Width != 0 {
+		r.Width = &i.Width
+	}
+	if i.Height != 0 {
+		r.Height = &i.Height
+	}
+	if i.Duration != 0 {
+		r.Duration = &i.Duration
+	}
+	if i.SupportsStreaming {
+		r.SupportsStreaming = &i.SupportsStreaming
 	}
 	return r
 }
