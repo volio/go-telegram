@@ -1,4 +1,4 @@
-package longpoll
+package telegram
 
 import (
 	"encoding/json"
@@ -11,50 +11,28 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/volio/go-common/log"
-	"github.com/volio/go-telegram/config"
-	"github.com/volio/go-telegram/model"
 	"go.uber.org/zap"
 )
 
-type LongPoll interface {
-	Start(ch chan *model.Update)
-	Stop()
-}
-
-func NewLongPoll(cfg *config.Config) LongPoll {
-	client := newHttpClient(cfg)
+func NewLongPoll(key string, timeout time.Duration, client *http.Client, ch chan *Update) *longPoll {
 	return &longPoll{
 		client:  client,
-		key:     cfg.Key,
-		timeout: int64(cfg.LongPollTimeout.Seconds()),
+		key:     key,
+		ch:      ch,
+		timeout: int64(timeout.Seconds()),
 	}
-}
-
-func newHttpClient(cfg *config.Config) *http.Client {
-	client := http.Client{}
-
-	if cfg.EnableProxy {
-		proxy := func(_ *http.Request) (*url.URL, error) {
-			return url.Parse(cfg.Proxy)
-		}
-
-		client.Transport = &http.Transport{
-			Proxy: proxy,
-		}
-	}
-
-	return &client
 }
 
 type longPoll struct {
 	client  *http.Client
+	ch      chan *Update
 	key     string
 	stopped bool
 	offset  int64
 	timeout int64
 }
 
-func (p *longPoll) Start(ch chan *model.Update) {
+func (p *longPoll) Start() {
 	p.stopped = false
 	for {
 		if p.stopped {
@@ -65,7 +43,7 @@ func (p *longPoll) Start(ch chan *model.Update) {
 			log.L().With(zap.Error(err), zap.Int64("offset", p.offset)).Error("fetch updates failed")
 		}
 		for _, update := range updates {
-			ch <- update
+			p.ch <- update
 			if update.UpdateID > p.offset {
 				p.offset = update.UpdateID
 			}
@@ -80,7 +58,7 @@ func (p *longPoll) Stop() {
 	p.stopped = true
 }
 
-func (p *longPoll) fetchUpdates() ([]*model.Update, error) {
+func (p *longPoll) fetchUpdates() ([]*Update, error) {
 	values := url.Values{}
 	values.Set("offset", strconv.FormatInt(p.offset+1, 10))
 	if p.timeout > 0 {
@@ -89,7 +67,7 @@ func (p *longPoll) fetchUpdates() ([]*model.Update, error) {
 	u := url.URL{
 		Scheme:   "https",
 		Host:     "api.telegram.org",
-		Path:     fmt.Sprintf("/bot%s/getUpdates", p.key),
+		Path:     fmt.Sprintf("/Bot%s/getUpdates", p.key),
 		RawQuery: values.Encode(),
 	}
 
@@ -106,7 +84,7 @@ func (p *longPoll) fetchUpdates() ([]*model.Update, error) {
 	if err != nil {
 		return nil, errors.WithMessagef(err, "error in read resp body")
 	}
-	var r model.UpdateReply
+	var r UpdateReply
 	if err := json.Unmarshal(data, &r); err != nil {
 		return nil, errors.WithMessagef(err, "unmarshal resp body failed, data: %v", string(data))
 	}

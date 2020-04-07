@@ -1,4 +1,4 @@
-package client
+package telegram
 
 import (
 	"bytes"
@@ -7,31 +7,44 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"time"
 
 	"github.com/pkg/errors"
 	"github.com/volio/go-common/log"
-	"github.com/volio/go-telegram/config"
 	"go.uber.org/zap"
 )
 
-type Client interface {
-	DoPost(method string, v interface{}, r interface{}) error
-	DoGet(method string, v map[string]string, r interface{}) error
+func newHttpClient(timeout time.Duration, cfg *ProxyConfig) *http.Client {
+	client := &http.Client{
+		Timeout: timeout,
+	}
+
+	if cfg.Enable {
+		proxy := func(_ *http.Request) (*url.URL, error) {
+			return url.Parse(cfg.Addr)
+		}
+
+		client.Transport = &http.Transport{
+			Proxy: proxy,
+		}
+	}
+
+	return client
 }
 
-func NewClient(cfg *config.Config) Client {
-	return &client{
-		hc:  newHttpClient(cfg),
-		key: cfg.Key,
+func newBotClient(key string, c *http.Client) *botClient {
+	return &botClient{
+		hc:  c,
+		key: key,
 	}
 }
 
-type client struct {
+type botClient struct {
 	hc  *http.Client
 	key string
 }
 
-func (c *client) DoPost(method string, v interface{}, r interface{}) error {
+func (c *botClient) DoPost(method string, v interface{}, r interface{}) error {
 	u := url.URL{
 		Scheme: "https",
 		Host:   "api.telegram.org",
@@ -68,7 +81,7 @@ func (c *client) DoPost(method string, v interface{}, r interface{}) error {
 	return nil
 }
 
-func (c *client) DoGet(method string, v map[string]string, r interface{}) error {
+func (c *botClient) DoGet(method string, v map[string]string, r interface{}) error {
 	values := url.Values{}
 	for k, value := range v {
 		values.Set(k, value)
@@ -97,22 +110,4 @@ func (c *client) DoGet(method string, v map[string]string, r interface{}) error 
 		return errors.WithMessagef(err, "unmarshal resp body failed, data: %v", string(data))
 	}
 	return nil
-}
-
-func newHttpClient(cfg *config.Config) *http.Client {
-	client := http.Client{
-		Timeout: cfg.RequestTimeout,
-	}
-
-	if cfg.EnableProxy {
-		proxy := func(_ *http.Request) (*url.URL, error) {
-			return url.Parse(cfg.Proxy)
-		}
-
-		client.Transport = &http.Transport{
-			Proxy: proxy,
-		}
-	}
-
-	return &client
 }

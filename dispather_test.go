@@ -1,18 +1,17 @@
-package update
+package telegram
 
 import (
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/mock"
-	"github.com/volio/go-telegram/model"
 )
 
 type MockHandler struct {
 	mock.Mock
 }
 
-func (h *MockHandler) Handle(update *model.Update) error {
+func (h *MockHandler) Handle(update *Update) error {
 	args := h.Called(update)
 	return args.Error(0)
 }
@@ -22,19 +21,19 @@ func TestDispatcher_Run(t *testing.T) {
 		h := new(MockHandler)
 		h.On("Handle", mock.Anything).Return(nil)
 
-		dispatcher := new(dispatcher)
-		ch := make(chan *model.Update, 100)
-		qch := make(chan interface{})
-		dispatcher.SetHandler(h.Handle)
+		ch := make(chan *Update, 100)
+		dispatcher := &dispatcher{ch: ch}
+		dispatcher.RegisterHandler(h.Handle)
+		dispatcher.RegisterHandler(h.Handle)
 
-		go dispatcher.Run(ch, qch)
+		go dispatcher.Run()
 
-		u := model.Update{UpdateID: 1}
+		u := Update{UpdateID: 1}
 		// sleep for go routine start
 		ch <- &u
-		time.Sleep(time.Millisecond * 100)
-		close(qch)
+		time.Sleep(time.Millisecond * 1)
 
 		h.AssertCalled(t, "Handle", &u)
+		h.AssertNumberOfCalls(t, "Handle", 2)
 	})
 }

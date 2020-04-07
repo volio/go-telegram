@@ -1,4 +1,4 @@
-package envelop
+package telegram
 
 const (
 	ParseModeMarkdown = "Markdown"

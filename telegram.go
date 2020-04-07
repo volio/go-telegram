@@ -1,54 +1,43 @@
 package telegram
 
 import (
+	"time"
+
 	"github.com/volio/go-common/graceful"
-	"github.com/volio/go-telegram/bot"
-	"github.com/volio/go-telegram/config"
-	"github.com/volio/go-telegram/longpoll"
-	"github.com/volio/go-telegram/model"
-	"github.com/volio/go-telegram/update"
 )
 
-type Telegram interface {
-	Start()
-	Stop()
-	OnUpdate(fn update.HandleFunc)
-	Bot() bot.Bot
-}
+func NewTelegram(cfg Config) *Telegram {
+	ch := make(chan *Update, 100)
+	phc := newHttpClient(time.Duration(0), &cfg.Proxy)
 
-func NewTelegram(cfg config.Config) Telegram {
-	return &telegram{
-		bot:        bot.NewBot(&cfg),
-		poll:       longpoll.NewLongPoll(&cfg),
-		dispatcher: update.NewDispatcher(),
-		q:          make(chan interface{}),
+	return &Telegram{
+		bot:        NewBot(&cfg),
+		poll:       NewLongPoll(cfg.Bot.Key, cfg.Request.LongPollTimeout, phc, ch),
+		dispatcher: newDispatcher(ch),
 	}
 }
 
-type telegram struct {
-	bot        bot.Bot
-	poll       longpoll.LongPoll
-	dispatcher update.Dispatcher
-	q          chan interface{}
+type Telegram struct {
+	bot        *Bot
+	poll       *longPoll
+	dispatcher *dispatcher
 }
 
-func (t *telegram) OnUpdate(fn update.HandleFunc) {
-	t.dispatcher.SetHandler(fn)
+func (t *Telegram) OnUpdate(fn HandleFunc) {
+	t.dispatcher.RegisterHandler(fn)
 }
 
-func (t *telegram) Bot() bot.Bot {
+func (t *Telegram) Bot() *Bot {
 	return t.bot
 }
 
-func (t *telegram) Start() {
-	ch := make(chan *model.Update, 100)
+func (t *Telegram) Start() {
 	graceful.Go(func() {
-		t.dispatcher.Run(ch, t.q)
+		t.dispatcher.Run()
 	})
-	t.poll.Start(ch)
+	t.poll.Start()
 }
 
-func (t *telegram) Stop() {
+func (t *Telegram) Stop() {
 	t.poll.Stop()
-	close(t.q)
 }
