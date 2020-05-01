@@ -1,39 +1,44 @@
 package telegram
 
 import (
+	"sync"
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/assert"
 )
-
-type MockHandler struct {
-	mock.Mock
-}
-
-func (h *MockHandler) Handle(update *Update) error {
-	args := h.Called(update)
-	return args.Error(0)
-}
 
 func TestDispatcher_Run(t *testing.T) {
 	t.Run("run", func(t *testing.T) {
-		h := new(MockHandler)
-		h.On("Handle", mock.Anything).Return(nil)
+		wg := &sync.WaitGroup{}
+		wg.Add(2)
 
 		ch := make(chan *Update, 100)
-		dispatcher := &dispatcher{ch: ch}
-		dispatcher.RegisterHandler(h.Handle)
-		dispatcher.RegisterHandler(h.Handle)
+		u := &Update{UpdateID: 1}
+
+		handler := func(update *Update) error {
+			assert.Equal(t, update, u)
+			wg.Done()
+			return nil
+		}
+
+		dispatcher := newDispatcher(ch)
+		dispatcher.RegisterHandler(handler)
+		dispatcher.RegisterHandler(handler)
 
 		go dispatcher.Run()
+		ch <- u
 
-		u := Update{UpdateID: 1}
-		// sleep for go routine start
-		ch <- &u
-		time.Sleep(time.Millisecond * 1)
+		done := make(chan bool)
+		go func() {
+			wg.Wait()
+			done <- true
+		}()
 
-		h.AssertCalled(t, "Handle", &u)
-		h.AssertNumberOfCalls(t, "Handle", 2)
+		select {
+		case <-done:
+		case <-time.After(10 * time.Millisecond):
+			assert.Fail(t, "handler not performed")
+		}
 	})
 }
